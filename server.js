@@ -161,7 +161,7 @@ server.post('/feeling/:id/:feeling', async (request, reply) => {
 
         sendNotification({
             title: 'Algo aconteceu!!',
-            body: `${babe[0].username} está se sentindo ${feelingString(feeling)}`,
+            body: `${username[0].username} está se sentindo ${feelingString(feeling)}`,
             token: babe[0].token.trim()
         })
 
@@ -186,7 +186,7 @@ server.post("/letter", async (request, reply) => {
         var token = await sql `select token from users where id=${target}`
         sendNotification({
             title: `Você tem algo para ler :)`,
-            body: `${username[0].username} te enviou uma cartinha ❤️`,
+            body: `${babe[0].username} te enviou uma cartinha ❤️`,
             token: token[0].token.trim()
         })
 
@@ -211,23 +211,14 @@ server.get('/lettersBySenderAndTarget/:sender/:target', async (request, reply) =
 
 server.put('/letterViewUpdate/:id', async (request, reply) =>{
     const {id} = request.params;
+    const letter = await database.getLetter(id)
+    const sender = letter[0].sender
+    const target = letter[0].target
 
-    
-    
-
+    const targetData = await sql `select * from users where id=${target}`
+    const senderData = await sql `select token, username from users where id=${sender}`
     try{
-        await database.letterViewUpdate(id);
 
-        const letter = await database.getLetter(id)
-
-        const sender = letter[0].sender
-        const target = letter[0].target
-
-        const targetData = await sql `select * from users where id=${target}`
-        const senderData = await sql `select token, username from users where id=${sender}`
-
-        
-        console.log(targetData[0].token.trim())
 
         if(letter[0].viewed == false) {
             sendNotification({
@@ -236,6 +227,15 @@ server.put('/letterViewUpdate/:id', async (request, reply) =>{
                 token: targetData[0].token.trim()
             })
         }
+
+        await database.letterViewUpdate(id);
+
+
+        
+
+        
+
+        
 
         reply.status(200)
     }catch(e){
