@@ -5,7 +5,7 @@ export class DataBasePostgres {
         await sql `update users set password=${user.hash}, token={${user.token}} where username=${user.username}`
     }
     async create(user){
-            await sql`insert into users (username, password, photo, feel, babe, token) values (${user.username}, ${user.password}, ${user.photo}, ${user.feel}, ${user.babe}, ${user,token}) `
+            await sql`insert into users (username, password, photo, feel, babe, token) values (${user.username}, ${user.password}, ${user.photo}, ${user.feel}, ${user.babe}, ${user.token}) `
         }
 
     async babeUpdate(data){
