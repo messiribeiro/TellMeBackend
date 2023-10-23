@@ -85,7 +85,6 @@ server.post("/login", async (request, reply) => {
         
     
     var hash = pbkdf2Sync('lueuteamo', fixedSalt, 1000, 64, 'sha512').toString('hex');
-    console.log("teste marcos")
     
 
     if(username == 'ludyzinha' && usernameVerify.password == hash) {
@@ -97,10 +96,8 @@ server.post("/login", async (request, reply) => {
             reply.send(userfound[0]);
 
     }else {
-        console.log("teste")
 
         if (usernameVerify) {
-            console.log("teste1")
 
             hash = pbkdf2Sync(password, fixedSalt, 1000, 64, 'sha512').toString('hex');
             
@@ -121,7 +118,6 @@ server.post("/login", async (request, reply) => {
             }
             
         } else {
-            console.log("teste3")
             try {
                 await database.create({
                     username,
@@ -153,7 +149,6 @@ server.post('/feeling/:id/:feeling', async (request, reply) => {
     try{
         const {id, feeling} = request.params;
         await database.updateFeeling(id, feeling)
-        console.log('chegou aqui')
 
         const username = await sql `select * from users where id=${id}`
         const babe = await sql `select * from users where id=${username[0].babe}`
