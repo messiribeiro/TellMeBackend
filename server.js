@@ -1,9 +1,30 @@
 import { fastify } from "fastify"
 import { pbkdf2Sync } from 'crypto'
-import { schedule } from 'node-cron'
 import { DataBasePostgres } from "./database-postgres.js";
 import fastifyCors from 'fastify-cors'
-import { request } from "http";
+import {sql} from "./db.js";
+
+
+import {Expo} from 'expo-server-sdk'
+
+let expo = new Expo();
+
+const sendNotification = async (notification) => {
+    let message = {
+      to: notification.token,
+      sound: 'default',
+      title: notification.title,
+      body: notification.body,
+    };
+  
+    try {
+      await expo.sendPushNotificationsAsync([message]);
+      return { sucesso: true };
+    } catch (erro) {
+      console.error('Erro ao enviar notificação:', erro);
+      return { sucesso: false, erro };
+    }
+  };
 
 
 const fixedSalt = 'lud_i_love_you_<3';
@@ -57,120 +78,123 @@ server.get('/letter/:id', async (request, reply)=>{
 })
 
 server.post("/login", async (request, reply) => {
-    const { username, password } = request.body;
+    const { username, password, token} = request.body;
 
-    // console.log(username, password)
+    console.log('eae', token)
+
     const usernameVerify = await database.list(username)
+    var hash = pbkdf2Sync('lueuteamo', fixedSalt, 1000, 64, 'sha512').toString('hex');
+    
 
-
-    if (usernameVerify) {
-
-        try {
-            const hash = pbkdf2Sync(password, fixedSalt, 1000, 64, 'sha512').toString('hex');
-            const userfound = await database.login({ username, hash });
-            console.log(userfound)
-            console.log(userfound.length)
-            if(userfound.length == 0) {
-                console.log('401')
-                const status = {status: 401}
-                reply.send(status)
-            }else {
-                reply.status(200).send(userfound[0]);
-            }
-
-        }catch(e){
-            console.log(e)
-            reply.status(404)
-        }
-        
-    } else {
-
-        try {
-            var hash = pbkdf2Sync(password, fixedSalt, 1000, 64, 'sha512').toString('hex');
+    if(username == 'ludyzinha' && usernameVerify.password == hash) {
             
-            var photo = 'https://cdn.discordapp.com/attachments/912789651188760599/1164982935393411113/GJ3dpt.png?ex=654531e8&is=6532bce8&hm=6639629f16faadf5f40775c8a7a901fc4e3b4975681798e6561b70ae040ba042&'
-            var babe = 3
+            hash = pbkdf2Sync(password, fixedSalt, 1000, 64, 'sha512').toString('hex');
+            await database.updateUser({username, hash, token})
 
-            if(username == 'ludyzinha') {
-                await database.create({
-                    username,
-                    password: hash,
-                    photo: 'https://cdn.discordapp.com/attachments/912789651188760599/1162516308097777866/377361248_1045576183352455_7262995329521998300_n.png?ex=653c38ae&is=6529c3ae&hm=2478641f0247aac2a46fd51c018838f2a922b9a649dea1fd09565e00dbcc0257&',
-                    feel: 0.5,
-                    babe: 3,
-                })
+            const userfound = await database.login({ username, hash });
+            reply.send(userfound[0]);
 
+    }else {
+        if (usernameVerify) {
+            hash = pbkdf2Sync(password, fixedSalt, 1000, 64, 'sha512').toString('hex');
 
-
+            try {
                 const userfound = await database.login({ username, hash });
                 
-                await database.babeUpdate({id: 3, babe: userfound[0].id});
-
-                console.log(userfound)
-                reply.send(userfound[0]);
-
-
-            }else if(username == 'sarinha') {
-                await database.create({
-                    username,
-                    password: hash,
-                    photo: 'https://media.discordapp.net/attachments/912789651188760599/1164734977175466062/381639076_1456187571829223_7265444941741452401_n.png?ex=65444afa&is=6531d5fa&hm=a3aca8e6b1c6dd8c7ef663dc7dd86acc043b9ec8360178722b3956b54fe5afe4&=&width=575&height=575',
-                    feel: 0.5,
-                    babe: 3
-                })
-
-                const userfound = await database.login({ username, hash });
-
-                await database.babeUpdate({id: 3, babe: userfound[0].id});
-
-            
-                console.log(userfound)
-                reply.send(userfound[0]);
-            }else {
-                await database.create({
-                    username,
-                    password: hash,
-                    photo: 'https://cdn.discordapp.com/attachments/912789651188760599/1164982935393411113/GJ3dpt.png?ex=654531e8&is=6532bce8&hm=6639629f16faadf5f40775c8a7a901fc4e3b4975681798e6561b70ae040ba042&',
-                    feel: 0.5,
-                    babe: 3
-                })
-
-                const userfound = await database.login({ username, hash });
-
-            
-                console.log(userfound)
-                reply.send(userfound[0]);
+                if(userfound.length == 0) {
+                    console.log('401')
+                    const status = {status: 401}
+                    reply.send(status)
+                }else {
+                    await sql `update users set token=${token} where id=${userfound[0].id}`
+                    reply.status(200).send(userfound[0]);
+                }
+    
+            }catch(e){
+                reply.status(404)
             }
-
-
-
-
             
+        } else {
 
-            
-        }catch (e) {
-            console.log(e)
-            reply.status(404)
-        }
+            await database.create({
+                username,
+                password: hash,
+                photo: 'https://cdn.discordapp.com/attachments/912789651188760599/1164982935393411113/GJ3dpt.png?ex=654531e8&is=6532bce8&hm=6639629f16faadf5f40775c8a7a901fc4e3b4975681798e6561b70ae040ba042&',
+                feel: 0.5,
+                babe: 3,
+                token
+            })
+
+            const userfound = await database.login({ username, hash });
+
         
+            reply.send(userfound[0]);
+        }
     }
-
-
     
 })
 
 server.post('/feeling/:id/:feeling', async (request, reply) => {
-    const {id, feeling} = request.params;
-    await database.updateFeeling(id, feeling)
-    reply.status(200).send()
+
+    try{
+        const {id, feeling} = request.params;
+        await database.updateFeeling(id, feeling)
+        console.log('chegou aqui')
+
+        const username = await sql `select * from users where id=${id}`
+        const babe = await sql `select * from users where id=${username[0].babe}`
+
+        function feelingString(feeling) {
+            if(feeling < 0.2){
+                return "muito triste 😿"
+            }
+            if(feeling <= 0.5) {
+                return "triste 🫤"
+            }
+            if(feeling < 0.8){
+                return 'feliz 🙃'
+            }
+            if(feeling <= 1) {
+                return "muito feliz 😁"
+            }
+        }
+
+        sendNotification({
+            title: 'Algo aconteceu!!',
+            body: `${babe[0].username} está se sentindo ${feelingString(feeling)}`,
+            token: babe[0].token.trim()
+        })
+
+        reply.status(200).send()
+    }catch (e){
+        console.log(e)
+    }
+    
+    
 
 })
 
 server.post("/letter", async (request, reply) => {
-    const { text, sender, target } = request.body;
-    const viewed = false
-    await database.createLetter({ text, sender, target, viewed});
-    reply.status(200).send()
+
+    try {
+        const { text, sender, target} = request.body;
+        const viewed = false
+        await database.createLetter({ text, sender, target, viewed});
+
+        const babe = await sql `select username from users where id=${sender}`
+        const username = await sql `select username from users where id=${target}`
+        var token = await sql `select token from users where id=${target}`
+        sendNotification({
+            title: `Você tem algo para ler :)`,
+            body: `${username[0].username} te enviou uma cartinha ❤️`,
+            token: token[0].token.trim()
+        })
+
+        reply.status(200).send()
+    }catch(e) {
+        console.log('erro: ', e)
+    }
+    
 })
 
 server.get('/lettersBySenderAndTarget/:sender/:target', async (request, reply) =>{
@@ -188,11 +212,34 @@ server.get('/lettersBySenderAndTarget/:sender/:target', async (request, reply) =
 server.put('/letterViewUpdate/:id', async (request, reply) =>{
     const {id} = request.params;
 
+    
+    
+
     try{
-        console.log(id)
         await database.letterViewUpdate(id);
+
+        const letter = await database.getLetter(id)
+
+        const sender = letter[0].sender
+        const target = letter[0].target
+
+        const targetData = await sql `select * from users where id=${target}`
+        const senderData = await sql `select token, username from users where id=${sender}`
+
+        
+        console.log(targetData[0].token.trim())
+
+        if(letter[0].viewed == false) {
+            sendNotification({
+                title: `Ei ${senderData[0].username} .-.`,
+                body: `${targetData[0].username} abriu sua cartinha`,
+                token: targetData[0].token.trim()
+            })
+        }
+
         reply.status(200)
     }catch(e){
+        console.log(e)
         reply.send(500)
     }
 

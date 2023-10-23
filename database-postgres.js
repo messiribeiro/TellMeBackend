@@ -1,10 +1,11 @@
-import { randomUUID } from "crypto";
 import {sql} from "./db.js";
 
 export class DataBasePostgres {
+    async updateUser(user) {
+        await sql `update users set password=${user.hash}, token={${user.token}} where username=${user.username}`
+    }
     async create(user){
-            let videos 
-            await sql`insert into users (username, password, photo, feel, babe) values (${user.username}, ${user.password}, ${user.photo}, ${user.feel}, ${user.babe}) `
+            await sql`insert into users (username, password, photo, feel, babe, token) values (${user.username}, ${user.password}, ${user.photo}, ${user.feel}, ${user.babe}, ${user,token}) `
         }
 
     async babeUpdate(data){
