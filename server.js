@@ -81,7 +81,7 @@ server.post("/login", async (request, reply) => {
     try{
         console.log("tentando fazer login")
 
-        const { username, password, token} = request.body;
+        const { username, password} = request.body;
 
     
         const usernameVerify = await database.list(username)
@@ -113,12 +113,12 @@ server.post("/login", async (request, reply) => {
                         const status = {status: 401}
                         reply.send(status)
                     }else {
-                        await sql `update users set token=${token} where id=${userfound[0].id}`
                         reply.status(200).send(userfound[0]);
                     }
         
                 }catch(e){
                     reply.status(404)
+                    console.log(e)
                 }
                 
             } else {
@@ -129,7 +129,7 @@ server.post("/login", async (request, reply) => {
                         photo: 'https://cdn.discordapp.com/attachments/912789651188760599/1164982935393411113/GJ3dpt.png?ex=654531e8&is=6532bce8&hm=6639629f16faadf5f40775c8a7a901fc4e3b4975681798e6561b70ae040ba042&',
                         feel: 0.5,
                         babe: 3,
-                        token
+                        
                     })
         
                     
@@ -240,6 +240,17 @@ server.get('/lettersBySenderAndTarget/:sender/:target', async (request, reply) =
         console.log(e)  
     }
     
+})
+
+server.put("/tokenUpdate", async (request, reply)=> {
+    const {token, userId} = request.body;
+    console.log(token.data, userId); 
+    try {
+        await sql `update users set token=${token.data} where id=${userId}`
+        reply.status(200);
+    }catch (e) {
+        console.log("errouuu: ", e)
+    }
 })
 
 server.put('/letterViewUpdate/:id', async (request, reply) =>{
