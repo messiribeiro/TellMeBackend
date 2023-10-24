@@ -250,6 +250,7 @@ server.put('/letterViewUpdate/:id', async (request, reply) =>{
 
     const targetData = await sql `select * from users where id=${target}`
     const senderData = await sql `select token, username from users where id=${sender}`
+
     try{
 
 
@@ -257,7 +258,7 @@ server.put('/letterViewUpdate/:id', async (request, reply) =>{
             sendNotification({
                 title: `Ei ${senderData[0].username} .-.`,
                 body: `${targetData[0].username} abriu sua cartinha`,
-                token: targetData[0].token.trim()
+                token: senderData[0].token.trim()
             })
         }
 
