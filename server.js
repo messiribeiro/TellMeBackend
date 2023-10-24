@@ -78,74 +78,80 @@ server.get('/letter/:id', async (request, reply)=>{
 })
 
 server.post("/login", async (request, reply) => {
-    const { username, password, token} = request.body;
+    try{
+        const { username, password, token} = request.body;
 
-    console.log(username, password, token)
-    const usernameVerify = await database.list(username)
+    
+        const usernameVerify = await database.list(username)
+            
+        
+        var hash = pbkdf2Sync('lueuteamo', fixedSalt, 1000, 64, 'sha512').toString('hex');
         
     
-    var hash = pbkdf2Sync('lueuteamo', fixedSalt, 1000, 64, 'sha512').toString('hex');
-    
-
-    if(username == 'ludyzinha' && usernameVerify.password == hash) {
-            
-            hash = pbkdf2Sync(password, fixedSalt, 1000, 64, 'sha512').toString('hex');
-            await database.updateUser({username, hash, token})
-            
-            const userfound = await database.login({ username, hash });
-            reply.send(userfound[0]);
-
-    }else {
-
-        if (usernameVerify) {
-
-            hash = pbkdf2Sync(password, fixedSalt, 1000, 64, 'sha512').toString('hex');
-            
-            try {
-                const userfound = await database.login({ username, hash });
-                
-                if(userfound.length == 0) {
-                    console.log('401')
-                    const status = {status: 401}
-                    reply.send(status)
-                }else {
-                    await sql `update users set token=${token} where id=${userfound[0].id}`
-                    reply.status(200).send(userfound[0]);
-                }
-    
-            }catch(e){
-                reply.status(404)
-            }
-            
-        } else {
-            try {
-                await database.create({
-                    username,
-                    password: hash,
-                    photo: 'https://cdn.discordapp.com/attachments/912789651188760599/1164982935393411113/GJ3dpt.png?ex=654531e8&is=6532bce8&hm=6639629f16faadf5f40775c8a7a901fc4e3b4975681798e6561b70ae040ba042&',
-                    feel: 0.5,
-                    babe: 3,
-                    token
-                })
-    
+        if(username == 'ludyzinha' && usernameVerify.password == hash) {
+        
+                hash = pbkdf2Sync(password, fixedSalt, 1000, 64, 'sha512').toString('hex');
+                await database.updateUser({username, hash, token})
                 
                 const userfound = await database.login({ username, hash });
                 console.log(userfound);
                 reply.send(userfound[0]);
-
-            }catch(e) {
-                console.log(e)
-            }
-
-            
+    
+        }else {
+    
+            if (usernameVerify) {
+                
+                hash = pbkdf2Sync(password, fixedSalt, 1000, 64, 'sha512').toString('hex');
+                
+                try {
+                    const userfound = await database.login({ username, hash });
+                    
+                    if(userfound.length == 0) {
+                        console.log('401')
+                        const status = {status: 401}
+                        reply.send(status)
+                    }else {
+                        await sql `update users set token=${token} where id=${userfound[0].id}`
+                        reply.status(200).send(userfound[0]);
+                    }
         
+                }catch(e){
+                    reply.status(404)
+                }
+                
+            } else {
+                try {
+                    await database.create({
+                        username,
+                        password: hash,
+                        photo: 'https://cdn.discordapp.com/attachments/912789651188760599/1164982935393411113/GJ3dpt.png?ex=654531e8&is=6532bce8&hm=6639629f16faadf5f40775c8a7a901fc4e3b4975681798e6561b70ae040ba042&',
+                        feel: 0.5,
+                        babe: 3,
+                        token
+                    })
+        
+                    
+                    const userfound = await database.login({ username, hash });
+                    console.log(userfound);
+                    reply.send(userfound[0]);
+    
+                }catch(e) {
+                    console.log(e)
+                }
+    
+                
+            
+            }
         }
+    }catch(e) {
+        console.log(e)
     }
+    
     
 })
 
 server.post('/feeling/:id/:feeling', async (request, reply) => {
-
+    console.log("aqui ó")
     try{
         const {id, feeling} = request.params;
         await database.updateFeeling(id, feeling)
