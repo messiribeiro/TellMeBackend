@@ -156,8 +156,6 @@ server.post("/login", async (request, reply) => {
 
 server.post('/feeling/:id/:feeling', async (request, reply) => {
 
-
-
     try{
         console.log("tentando mudar o feeling")
         const {id, feeling} = request.params;
@@ -187,6 +185,7 @@ server.post('/feeling/:id/:feeling', async (request, reply) => {
             body: `${username[0].username} está se sentindo ${feelingString(feeling)}`,
             token: babe[0].token.trim()
         })
+        console.log(babe[0].token.trim())
 
         reply.status(200).send()
         console.log("feeling alterado")
