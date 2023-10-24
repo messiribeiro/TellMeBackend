@@ -79,6 +79,8 @@ server.get('/letter/:id', async (request, reply)=>{
 
 server.post("/login", async (request, reply) => {
     try{
+        console.log("tentando fazer login")
+
         const { username, password, token} = request.body;
 
     
@@ -134,6 +136,8 @@ server.post("/login", async (request, reply) => {
                     const userfound = await database.login({ username, hash });
                     console.log(userfound);
                     reply.send(userfound[0]);
+                    console.log("login concluído")
+
     
                 }catch(e) {
                     console.log(e)
@@ -151,12 +155,15 @@ server.post("/login", async (request, reply) => {
 })
 
 server.post('/feeling/:id/:feeling', async (request, reply) => {
+
+
+
     try{
+        console.log("tentando mudar o feeling")
         const {id, feeling} = request.params;
         await database.updateFeeling(id, feeling)
 
         const username = await sql `select * from users where id=${id}`
-        console.log(id)
 
         const babe = await sql `select * from users where id=${username[0].babe}`
 
@@ -182,6 +189,8 @@ server.post('/feeling/:id/:feeling', async (request, reply) => {
         })
 
         reply.status(200).send()
+        console.log("feeling alterado")
+
     }catch (e){
         console.log(e)
     }
@@ -191,8 +200,10 @@ server.post('/feeling/:id/:feeling', async (request, reply) => {
 })
 
 server.post("/letter", async (request, reply) => {
-
+    
     try {
+        console.log("tentando postar uma cartinha")
+
         const { text, sender, target} = request.body;
         const viewed = false
         await database.createLetter({ text, sender, target, viewed});
@@ -207,6 +218,8 @@ server.post("/letter", async (request, reply) => {
         })
 
         reply.status(200).send()
+        console.log("cartinha enviada")
+
     }catch(e) {
         console.log('erro: ', e)
     }
@@ -214,11 +227,16 @@ server.post("/letter", async (request, reply) => {
 })
 
 server.get('/lettersBySenderAndTarget/:sender/:target', async (request, reply) =>{
+
     try {
+        console.log("tentando listar cartinhas")
+
         const {sender, target} = request.params;
         console.log(sender, target)
         const letters = await database.getLetterBySenderAndTarget({sender, target});
         reply.status(200).send(letters);
+        console.log("cartinhas listadas")
+
     }catch(e) {
         console.log(e)  
     }
