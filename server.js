@@ -170,7 +170,7 @@ server.post('/feeling/:id/:feeling', async (request, reply) => {
                 return "muito triste 😿"
             }
             if(feeling <= 0.5) {
-                return "triste 🫤"
+                return "triste 😢"
             }
             if(feeling < 0.8){
                 return 'feliz 🙃'
