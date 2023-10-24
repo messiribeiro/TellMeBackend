@@ -34,7 +34,7 @@ const server = fastify()
 const database = new DataBasePostgres()
 
 server.register(fastifyCors, {
-    origin: 'true'
+    origin: '*'
 })
 
 
