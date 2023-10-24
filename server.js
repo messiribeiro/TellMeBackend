@@ -151,12 +151,13 @@ server.post("/login", async (request, reply) => {
 })
 
 server.post('/feeling/:id/:feeling', async (request, reply) => {
-    console.log("aqui ó")
     try{
         const {id, feeling} = request.params;
         await database.updateFeeling(id, feeling)
 
         const username = await sql `select * from users where id=${id}`
+        console.log(id)
+
         const babe = await sql `select * from users where id=${username[0].babe}`
 
         function feelingString(feeling) {
