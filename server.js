@@ -41,8 +41,7 @@ io.on('connection', (socket) => {
         if(activeSockets[babeId[0].babe]) {
 
             const letters = await sql `select * from letters where sender=${userId} and target=${babeId[0].babe}`
-            console.log(letters)
-            activeSockets[babeId[0].babe].emit('newLetter', letters[length-1]); 
+            activeSockets[babeId[0].babe].emit('newLetter', letters[letters.length - 1]); 
 
             
         }
