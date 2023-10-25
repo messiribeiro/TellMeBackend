@@ -39,10 +39,10 @@ io.on('connection', (socket) => {
         const {userId} = data;
         if(activeSockets[userId]) {
             const babeId = await sql `select babe from users where id=${userId}`
-            console.log(babeId)
 
-            const babeData = await sql `select feel from users where id=${babeId[0].babe}`
-            activeSockets[babeId[0].babe].emit('feelingUpdate', babeData[0].feel); 
+            const userFeel = await sql `select feel from users where id=${userId}`
+            console.log(babeData)
+            activeSockets[babeId[0].babe].emit('feelingUpdate', userFeel[0].feel); 
             
         }
     });
