@@ -3,11 +3,56 @@ import { pbkdf2Sync } from 'crypto'
 import { DataBasePostgres } from "./database-postgres.js";
 import fastifyCors from 'fastify-cors'
 import {sql} from "./db.js";
-
+import { Server } from 'socket.io';
 
 import {Expo} from 'expo-server-sdk'
 
 let expo = new Expo();
+
+const server = fastify()
+const database = new DataBasePostgres()
+
+const httpServer = server.server;
+const io = new Server(httpServer, {
+  cors: {
+    origin: '*',
+  },
+});
+
+
+const activeSockets = {}
+
+io.on('connection', (socket) => {
+
+    socket.on('register', data =>{
+        console.log("Cliente conectado", data)
+        activeSockets[data.userId] = socket
+    }) 
+
+    socket.on('disconnect', () => {
+        console.log('user disconnected');
+    });
+
+    
+    socket.on('feelingUpdate', async (data) => {
+        console.log(data)
+        const {userId} = data;
+        if(activeSockets[userId]) {
+            const babeId = await sql `select babe from users where id=${userId}`
+            console.log(babeId)
+
+            const babeData = await sql `select feel from users where id=${babeId[0].babe}`
+            activeSockets[babeId[0].babe].emit('feelingUpdate', babeData[0].feel); 
+            
+        }
+    });
+
+
+});
+
+
+
+
 
 const sendNotification = async (notification) => {
     let message = {
@@ -29,13 +74,6 @@ const sendNotification = async (notification) => {
 
 const fixedSalt = 'lud_i_love_you_<3';
 
-
-const server = fastify()
-const database = new DataBasePostgres()
-
-server.register(fastifyCors, {
-    origin: '*'
-})
 
 
 server.post("/user", async (request, reply) => {
