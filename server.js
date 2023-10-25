@@ -27,21 +27,41 @@ io.on('connection', (socket) => {
     socket.on('register', data =>{
         console.log("Cliente conectado", data)
         activeSockets[data.userId] = socket
-    }) 
+    })
 
     socket.on('disconnect', () => {
         console.log('user disconnected');
     });
+    
+    socket.on('newLetter', async (data)=>{
+        console.log(data)
+        const {userId} = data;
+        const babeId = await sql `select babe from users where id=${userId}`
+
+        if(activeSockets[babeId[0].babe]) {
+
+            const letters = await sql `select * from letters where sender=${userId} and target=${babeId[0].babe}`
+            console.log(letters)
+            activeSockets[babeId[0].babe].emit('newLetter', letters); 
+
+            
+        }
+    })
+
+    
 
     
     socket.on('feelingUpdate', async (data) => {
         console.log(data)
         const {userId} = data;
-        if(activeSockets[userId]) {
-            const babeId = await sql `select babe from users where id=${userId}`
+        const babeId = await sql `select babe from users where id=${userId}`
+
+        if(activeSockets[babeId[0].babe]) {
 
             const userFeel = await sql `select feel from users where id=${userId}`
+            
             activeSockets[babeId[0].babe].emit('feelingUpdate', userFeel[0].feel); 
+
             
         }
     });
