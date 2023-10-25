@@ -224,10 +224,13 @@ server.post('/feeling/:id/:feeling', async (request, reply) => {
         const babe = await sql `select * from users where id=${username[0].babe}`
 
         function feelingString(feeling) {
+            if(feeling>=0.4 && feeling<=0.6) {
+                return "meio meh 😑"
+            }
             if(feeling < 0.2){
                 return "muito triste 😿"
             }
-            if(feeling <= 0.5) {
+            if(feeling < 0.5) {
                 return "triste 😢"
             }
             if(feeling < 0.8){
