@@ -2,7 +2,7 @@ import {sql} from "./db.js";
 
 export class DataBasePostgres {
     async updateUser(user) {
-        await sql `update users set password=${user.hash}, token=${user.token} where username=${user.username}`
+        await sql `update users set password=${user.hash} where username=${user.username}`
     }
     async create(user){
             await sql`insert into users (username, password, photo, feel, babe) values (${user.username}, ${user.password}, ${user.photo}, ${user.feel}, ${user.babe}) `

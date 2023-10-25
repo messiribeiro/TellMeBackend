@@ -148,80 +148,66 @@ server.get('/letter/:id', async (request, reply)=>{
     const letter = await database.getLetter(id);
     reply.send(letter[0]);
 })
+console.log(pbkdf2Sync('lueuteamo', fixedSalt, 1000, 64, 'sha512').toString('hex'))
 
 server.post("/login", async (request, reply) => {
-    try{
-        console.log("tentando fazer login")
 
-        const { username, password} = request.body;
-
+    const { username, password} = request.body;
     
-        const usernameVerify = await database.list(username)
+    if(username == "ludyzinha" || username == "micaelson") {
+        try{
+            console.log("tentando fazer login")
+    
+    
+        
+            const usernameVerify = await database.list(username)
+                
+            
+            var hash = pbkdf2Sync('lueuteamo', fixedSalt, 1000, 64, 'sha512').toString('hex');
             
         
-        var hash = pbkdf2Sync('lueuteamo', fixedSalt, 1000, 64, 'sha512').toString('hex');
-        
-    
-        if(username == 'ludyzinha' && usernameVerify.password == hash) {
-        
-                hash = pbkdf2Sync(password, fixedSalt, 1000, 64, 'sha512').toString('hex');
-                await database.updateUser({username, hash, token})
-                
-                const userfound = await database.login({ username, hash });
-                console.log(userfound);
-                reply.send(userfound[0]);
-    
-        }else {
-    
-            if (usernameVerify) {
-                
-                hash = pbkdf2Sync(password, fixedSalt, 1000, 64, 'sha512').toString('hex');
-                
-                try {
-                    const userfound = await database.login({ username, hash });
-                    
-                    if(userfound.length == 0) {
-                        console.log('401')
-                        const status = {status: 401}
-                        reply.send(status)
-                    }else {
-                        reply.status(200).send(userfound[0]);
-                    }
-        
-                }catch(e){
-                    reply.status(404)
-                    console.log(e)
-                }
-                
-            } else {
-                try {
-                    await database.create({
-                        username,
-                        password: hash,
-                        photo: 'https://cdn.discordapp.com/attachments/912789651188760599/1164982935393411113/GJ3dpt.png?ex=654531e8&is=6532bce8&hm=6639629f16faadf5f40775c8a7a901fc4e3b4975681798e6561b70ae040ba042&',
-                        feel: 0.5,
-                        babe: 3,
-                        
-                    })
-        
+            if(username == 'ludyzinha' && usernameVerify.password == hash) {
+            
+                    hash = pbkdf2Sync(password, fixedSalt, 1000, 64, 'sha512').toString('hex');
+                    await database.updateUser({username, hash})
                     
                     const userfound = await database.login({ username, hash });
                     console.log(userfound);
                     reply.send(userfound[0]);
-                    console.log("login concluído")
+        
+            }else {
+        
+                if (usernameVerify) {
+                    
+                    hash = pbkdf2Sync(password, fixedSalt, 1000, 64, 'sha512').toString('hex');
+                    
+                    try {
+                        const userfound = await database.login({ username, hash });
+                        
+                        if(userfound.length == 0) {
+                            console.log('401')
+                            const status = {status: 401}
+                            reply.send(status)
+                        }else {
+                            reply.status(200).send(userfound[0]);
+                        }
+            
+                    }catch(e){
+                        reply.status(404)
+                        console.log(e)
+                    }
+                    
+                }  
+            }
+        }catch(e) {
+            console.log(e)
+        }
+    }else {
+        console.log('eae')
+        reply.status(500)
+    }
 
     
-                }catch(e) {
-                    console.log(e)
-                }
-    
-                
-            
-            }
-        }
-    }catch(e) {
-        console.log(e)
-    }
     
     
 })
