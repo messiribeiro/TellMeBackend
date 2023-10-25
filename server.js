@@ -41,7 +41,6 @@ io.on('connection', (socket) => {
             const babeId = await sql `select babe from users where id=${userId}`
 
             const userFeel = await sql `select feel from users where id=${userId}`
-            console.log(babeData)
             activeSockets[babeId[0].babe].emit('feelingUpdate', userFeel[0].feel); 
             
         }
