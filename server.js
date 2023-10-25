@@ -22,6 +22,21 @@ const io = new Server(httpServer, {
 
 const activeSockets = {}
 
+
+function findMostRecentLetter(data) {
+    if (!data || data.length === 0) {
+        return null;
+    }
+    let mostRecentRecord = data[0];
+    for (let i = 1; i < data.length; i++) {
+        if (new Date(data[i].created_at) > new Date(mostRecentRecord.created_at)) {
+            mostRecentRecord = data[i];
+        }
+    }
+    return mostRecentRecord;
+}
+
+
 io.on('connection', (socket) => {
 
     socket.on('register', data =>{
@@ -41,7 +56,8 @@ io.on('connection', (socket) => {
         if(activeSockets[babeId[0].babe]) {
 
             const letters = await sql `select * from letters where sender=${userId} and target=${babeId[0].babe}`
-            activeSockets[babeId[0].babe].emit('newLetter', letters[letters.length - 1]); 
+            
+            activeSockets[babeId[0].babe].emit('newLetter', findMostRecentLetter(letters)); 
 
             
         }
